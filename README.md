@@ -32,7 +32,10 @@ Her adım bir sonrakine köprü kurar. Atlama.
 [5] ChromaDB vektör store + benzerlik araması
         │
         ▼
-[6] ← şu an buradasın — serinin özeti ve öğrendiklerin
+[6] Function Calling — LLM'e dış fonksiyon tanıtma
+        │
+        ▼
+[7] ← şu an buradasın — serinin özeti ve öğrendiklerin
 ```
 
 | Adım | Repo | Ne Öğrenirsin |
@@ -42,6 +45,7 @@ Her adım bir sonrakine köprü kurar. Atlama.
 | 3 | [rag-langchain-3](https://github.com/yasir237/rag-langchain-3) | RunnableLambda, RunnablePassthrough, çoklu zincir |
 | 4 | [rag-langchain-4](https://github.com/yasir237/rag-langchain-4) | RecursiveCharacterTextSplitter, Gemini Embedding |
 | 5 | [rag-langchain-5](https://github.com/yasir237/rag-langchain-5) | ChromaDB, similarity_search(), k parametresi |
+| 6 | [rag-langchain-6](https://github.com/yasir237/rag-langchain-6) | BaseModel, bind_tools(), tool_calls, çoklu fonksiyon |
 
 ---
 
@@ -71,7 +75,8 @@ Kullanıcı sorusu
 │  5. Bulunan chunk'lar + soru → PromptTemplate       │
 │                        │                            │
 │                        ▼                            │
-│  6. Groq (Llama 3.1) → Cevap üretir                │
+│  6. Groq (Llama 3.3) → Cevap üretir                │
+│     ↳ Gerekirse Function Calling ile dış veri çeker │
 └─────────────────────────────────────────────────────┘
       │
       ▼
@@ -201,12 +206,29 @@ Bu sayede `**Anlatım**`, `**Özet**` gibi başlıklar chunk'lara karışmaz. So
 
 ---
 
+## Function Calling — Model Kendi Karar Verir
+
+LLM'e birden fazla fonksiyon tanıtırsan, soruya göre doğru olanı **kendi seçer.** Hatta aynı anda ikisini birden çağırabilir:
+
+```python
+# "Ankara'dan Londra'ya uçuş ver, oradaki hava nasıl?" sorusuna
+# model ikisini birden döndürür:
+[
+  {'name': 'FlightsSearch', 'args': {'origin': 'ESB', 'destination': 'LHR', 'date': '2026-12-15'}},
+  {'name': 'WeatherSearch', 'args': {'airport_code': 'LHR'}}
+]
+```
+
+**Kritik kural:** Model fonksiyonu çalıştırmaz — sadece hangisini çağırman gerektiğini söyler. Çalıştırmak sana kalır.
+
+---
+
 ## Kurulum
 
 ```bash
 pip install langchain langchain-core langchain-groq
 pip install langchain-text-splitters langchain-google-genai
-pip install langchain-chroma chromadb
+pip install langchain-chroma chromadb pydantic
 ```
 
 ### API Anahtarları
